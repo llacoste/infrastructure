@@ -31,6 +31,9 @@ init: build
 validate: init
     {{terraform}} validate
 
+lint: build
+    {{docker}} {{image}} tflint --recursive
+
 plan: env init
     {{terraform_env}} plan -out=.terraform/plan
 

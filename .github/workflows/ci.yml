@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read Terraform version
+        id: tf
+        run: echo "version=$(awk '/^terraform / {print $2}' .tool-versions)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ steps.tf.outputs.version }}
+
+      - name: terraform fmt -check
+        run: terraform fmt -check -recursive
+
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read Terraform version
+        id: tf
+        run: echo "version=$(awk '/^terraform / {print $2}' .tool-versions)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ steps.tf.outputs.version }}
+
+      - name: terraform init
+        run: terraform init -backend=false -input=false
+
+      - name: terraform validate
+        run: terraform validate
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read TFLint version
+        id: tl
+        run: echo "version=$(awk '/^tflint / {print $2}' .tool-versions)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v${{ steps.tl.outputs.version }}
+
+      - name: tflint --init
+        run: tflint --init
+
+      - name: tflint
+        run: tflint --recursive

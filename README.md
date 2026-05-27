@@ -79,6 +79,7 @@ just run
 just fmt
 just init
 just validate
+just lint
 just plan
 just apply
 just check-redirects
