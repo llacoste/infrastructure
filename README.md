@@ -32,16 +32,46 @@ Re-run `just env` whenever the underlying 1Password items change. The file is
 gitignored and is passed to the container via `--env-file .env`; resolved
 secrets are never written to logs or committed.
 
-The Cloudflare API token must cover all zones in the account because
-Terraform creates new zones, and it needs `Account Settings / Read` so the
-configuration can discover the account ID without it being supplied manually:
+### Cloudflare token
+
+The Cloudflare API token must cover all zones in the account, because
+Terraform creates new zones. It needs `Account Settings / Read` so the
+configuration can discover the account ID without it being supplied manually,
+and `Account / Zone / Edit` so Terraform can create zones inside the account
+(the zone-level `Zone / Zone / Edit` permission only covers *modifying*
+existing zones).
 
 | Permission |
 | --- |
 | `Account / Account Settings / Read` |
+| `Account / Zone / Edit` |
 | `Zone / Zone / Edit` |
 | `Zone / DNS / Edit` |
 | `Zone / Single Redirect / Edit` |
+
+Account Resources should be set to `Include — All accounts`. Zone Resources
+should cover every zone Terraform will manage.
+
+### Namecheap API
+
+Namecheap's API is opt-in and IP-restricted. In your Namecheap account at
+`ap.www.namecheap.com/settings/tools/apiaccess/`:
+
+- Turn on **API Access**.
+- Add every IP you'll run Terraform from to **Whitelisted IPs** (your home
+  network, any laptop's current address, CI runners if/when applicable).
+
+A request from an unlisted IP returns `Invalid request IP (1011150)` and
+every Namecheap-touching Terraform operation will fail with that error until
+the IP is added.
+
+### DigitalOcean token
+
+Create a Personal Access Token at
+`https://cloud.digitalocean.com/account/api/tokens` scoped to read + write
+for at least the `Domain` resource. Store it in 1Password as a new item
+named `DigitalOcean` in the `Automation and Tools` vault with a field
+`api_token` — the `.env.tpl` reference points at that exact path.
 
 ## Running
 
