@@ -7,6 +7,11 @@ terraform {
       version = "~> 5.19"
     }
 
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.87"
+    }
+
     namecheap = {
       source  = "namecheap/namecheap"
       version = "~> 2.3"
