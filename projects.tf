@@ -25,4 +25,12 @@ resource "digitalocean_project" "threadscape" {
   resources = [
     digitalocean_app.threadscape.urn,
   ]
+
+  # The DO API has no way to remove a URN from a project once its underlying
+  # resource is deleted; the threadscape.art domain URN lingers after that
+  # zone was destroyed. Ignoring drift on resources here avoids permanent
+  # phantom diffs on plan/apply.
+  lifecycle {
+    ignore_changes = [resources]
+  }
 }
