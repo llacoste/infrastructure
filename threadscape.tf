@@ -28,16 +28,6 @@ resource "digitalocean_record" "threadscape_art_apex_aaaa" {
   ttl    = 30
 }
 
-resource "namecheap_domain_records" "threadscape_art" {
-  domain = "threadscape.art"
-  mode   = "MERGE"
-  nameservers = [
-    "ns1.digitalocean.com",
-    "ns2.digitalocean.com",
-    "ns3.digitalocean.com",
-  ]
-}
-
 resource "digitalocean_app" "threadscape" {
   spec {
     name   = "threadscape"
