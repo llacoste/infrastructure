@@ -26,7 +26,7 @@ env:
       echo "Inside container; .env is mounted via --env-file. Skipping op inject."; \
     else \
       op inject -i .env.tpl | \
-        sed -E 's/^([A-Z_]+)="(.*)"$/\1=\2/' > .env; \
+        sed -E 's/^([A-Za-z_][A-Za-z0-9_]*)="(.*)"$/\1=\2/' > .env; \
     fi
 
 build:
