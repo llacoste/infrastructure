@@ -32,8 +32,8 @@ resource "cloudflare_dns_record" "www" {
 
   zone_id = cloudflare_zone.redirect[each.key].id
   name    = "www.${each.value}"
-  type    = "A"
-  content = "192.0.2.1"
+  type    = "CNAME"
+  content = each.value
   ttl     = 1
   proxied = true
   comment = "Edge redirect to lancelacoste.com; no origin traffic expected."
