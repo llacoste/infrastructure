@@ -5,6 +5,7 @@ root := justfile_directory()
 image := "lancelacoste-infrastructure"
 terraform_version := `awk '/^terraform / {print $2}' .tool-versions`
 tflint_version := `awk '/^tflint / {print $2}' .tool-versions`
+just_version := `awk '/^just / {print $2}' .tool-versions`
 docker := "docker run --rm --workdir /workdir -v " + root + ":/workdir"
 terraform := docker + " " + image + " terraform"
 terraform_env := docker + " --env-file .env " + image + " terraform"
@@ -19,6 +20,7 @@ build:
     docker build \
       --build-arg TERRAFORM_VERSION={{terraform_version}} \
       --build-arg TFLINT_VERSION={{tflint_version}} \
+      --build-arg JUST_VERSION={{just_version}} \
       --tag {{image}} .
 
 run: env build
