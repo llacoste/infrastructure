@@ -1,35 +1,35 @@
-resource "digitalocean_domain" "factoremist" {
-  name = "factoremist.com"
+resource "digitalocean_domain" "threadscape_art" {
+  name = "threadscape.art"
 }
 
-resource "digitalocean_record" "factoremist_apex_a" {
+resource "digitalocean_record" "threadscape_art_apex_a" {
   for_each = toset([
     "162.159.140.98",
     "172.66.0.96",
   ])
 
-  domain = digitalocean_domain.factoremist.id
+  domain = digitalocean_domain.threadscape_art.id
   type   = "A"
   name   = "@"
   value  = each.value
   ttl    = 30
 }
 
-resource "digitalocean_record" "factoremist_apex_aaaa" {
+resource "digitalocean_record" "threadscape_art_apex_aaaa" {
   for_each = toset([
     "2a06:98c1:58::60",
     "2606:4700:7::60",
   ])
 
-  domain = digitalocean_domain.factoremist.id
+  domain = digitalocean_domain.threadscape_art.id
   type   = "AAAA"
   name   = "@"
   value  = each.value
   ttl    = 30
 }
 
-resource "namecheap_domain_records" "factoremist" {
-  domain = "factoremist.com"
+resource "namecheap_domain_records" "threadscape_art" {
+  domain = "threadscape.art"
   mode   = "MERGE"
   nameservers = [
     "ns1.digitalocean.com",
@@ -38,27 +38,27 @@ resource "namecheap_domain_records" "factoremist" {
   ]
 }
 
-resource "digitalocean_app" "factoremist" {
+resource "digitalocean_app" "threadscape" {
   spec {
-    name   = "factoremist"
-    region = "sfo"
+    name   = "threadscape"
+    region = "nyc"
 
     static_site {
-      name             = "factoremist"
+      name             = "threadscape"
       source_dir       = "/"
       environment_slug = "html"
 
       github {
-        repo           = "llacoste/factoremist"
+        repo           = "llacoste/threadscape"
         branch         = "master"
         deploy_on_push = true
       }
     }
 
     domain {
-      name = "factoremist.com"
+      name = "threadscape.art"
       type = "PRIMARY"
-      zone = "factoremist.com"
+      zone = "threadscape.art"
     }
 
     alert {
@@ -77,7 +77,7 @@ resource "digitalocean_app" "factoremist" {
           }
         }
         component {
-          name = "factoremist"
+          name = "threadscape"
         }
       }
     }
