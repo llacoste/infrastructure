@@ -40,9 +40,11 @@ jobs:
 
           tf_current=$(awk '/^terraform / {print $2}' .tool-versions)
           tl_current=$(awk '/^tflint / {print $2}' .tool-versions)
+          just_current=$(awk '/^just / {print $2}' .tool-versions)
 
           echo "## Pinned tool versions" >> "$GITHUB_STEP_SUMMARY"
           check Terraform hashicorp/terraform "$tf_current"
           check TFLint    terraform-linters/tflint "$tl_current"
+          check Just      casey/just "$just_current"
 
           exit $fail
