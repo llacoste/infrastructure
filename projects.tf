@@ -23,7 +23,6 @@ resource "digitalocean_project" "threadscape" {
   purpose     = "Web Application"
   is_default  = true
   resources = [
-    digitalocean_domain.threadscape_art.urn,
     digitalocean_app.threadscape.urn,
   ]
 }
