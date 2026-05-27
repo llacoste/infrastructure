@@ -1,14 +1,67 @@
 # infrastructure
 
-Terraform configuration for personal infrastructure owned and operated by
-Lance Lacoste.
+Declarative Terraform configuration for the personal infrastructure that Lance
+Lacoste owns and operates — domains, accounts, services, and anything else
+worth keeping under version control.
 
-## Architecture
+The repository is organized workload-by-workload. New workloads slot in as
+peers; existing ones evolve in place. The first workload under management is
+DNS and domain routing for [lancelacoste.com](https://lancelacoste.com) and
+its alternates; see [Workloads](#workloads) for details.
 
-The initial managed workload is domain routing for
-[lancelacoste.com](https://lancelacoste.com). Namecheap remains the registrar.
-Cloudflare provides authoritative DNS, TLS termination, and permanent redirects
-for alternate domains:
+## Setup
+
+Required tools:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [just](https://github.com/casey/just)
+- [1Password CLI](https://developer.1password.com/docs/cli/get-started/)
+
+Terraform itself runs inside the repository's Docker image and is pinned in
+`.tool-versions` and `Dockerfile`. No local Terraform install is required.
+
+Credentials live in the `Automation and Tools` 1Password vault and are
+referenced from `.env.tpl`. After signing in to the 1Password CLI, generate
+the ignored `.env` file that the Terraform container consumes:
+
+```bash
+just env
+```
+
+Re-run `just env` whenever the underlying 1Password items change. The file is
+gitignored and is passed to the container via `--env-file .env`; resolved
+secrets are never written to logs or committed.
+
+## Running
+
+Day-to-day commands:
+
+```bash
+just fmt              # format all .tf files
+just validate         # static schema check
+just lint             # tflint with the recommended ruleset
+just plan             # write a reviewed plan to .terraform/plan
+just apply            # apply the reviewed plan
+just run              # interactive shell in the Terraform container
+just check-redirects  # smoke-test the domain-routing workload
+```
+
+`just plan` writes its output to `.terraform/plan` so `just apply` runs the
+exact plan that was reviewed.
+
+CI surfaces three separate status checks on every push and pull request —
+`CI / fmt`, `CI / validate`, `CI / lint` — plus a weekly `Versions` job that
+fails when the Terraform or TFLint pins in `.tool-versions` fall behind
+upstream. Dependabot opens weekly PRs for Terraform providers, GitHub Actions
+pins, and the Docker base image.
+
+## Workloads
+
+### Domain routing
+
+Namecheap remains the registrar. Cloudflare provides authoritative DNS, TLS
+termination, and permanent redirects for alternate domains to the canonical
+website:
 
 | Domain | Destination |
 | --- | --- |
@@ -16,30 +69,16 @@ for alternate domains:
 | `lancelacoste.dev` | `https://lancelacoste.com/` |
 | `llacoste.com` | `https://lancelacoste.com/` |
 
-Current resources:
+Managed resources:
 
-- Cloudflare zones for redirect domains.
-- Proxied apex and `www` records required for edge redirects.
-- Cloudflare `301` redirect rules to the canonical website.
-- Namecheap nameserver delegation to Cloudflare.
+- Cloudflare zones for redirect domains
+- Proxied apex and `www` records required for edge redirects
+- Cloudflare `301` redirect rulesets to the canonical website
+- Namecheap nameserver delegation to Cloudflare
 
-Additional personal infrastructure can be added here as it is brought under
-Terraform management. The primary `lancelacoste.com` DNS zone, email records,
-and GitHub Pages website repository are not managed yet.
-
-## Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [just](https://github.com/casey/just)
-- [1Password CLI](https://developer.1password.com/docs/cli/get-started/)
-- Namecheap API access enabled for the registered redirect domains.
-- A Cloudflare API token able to create and manage the redirect zones.
-
-Terraform runs inside the repository's Docker image and is pinned in
-`.tool-versions` and `Dockerfile`.
-
-The Cloudflare API token needs these permissions and must cover all zones in
-the account because Terraform creates new zones:
+The Cloudflare API token must cover all zones in the account because
+Terraform creates new zones, and it needs `Account Settings / Read` so the
+configuration can discover the account ID without it being supplied manually:
 
 | Permission |
 | --- |
@@ -48,73 +87,31 @@ the account because Terraform creates new zones:
 | `Zone / DNS / Edit` |
 | `Zone / Single Redirect / Edit` |
 
-The Namecheap provider uses the registered username and API key stored in
-1Password. The Cloudflare token must expose a single account; Terraform
-discovers that account when creating zones.
+Not currently under Terraform management: the primary `lancelacoste.com` DNS
+zone, Proton Mail records, and the GitHub Pages website repository.
 
-## Authentication
+#### Importing existing redirect infrastructure
 
-Credentials are referenced in `.env.tpl` and materialized into an ignored
-`.env` file for Docker:
-
-```dotenv
-CLOUDFLARE_API_TOKEN="op://Automation and Tools/Cloudflare Token/api_token"
-NAMECHEAP_USER_NAME="op://Automation and Tools/Namecheap/user_name"
-NAMECHEAP_API_KEY="op://Automation and Tools/Namecheap/api_key"
-NAMECHEAP_USE_SANDBOX="false"
-```
-
-Generate local credentials after signing into the 1Password CLI:
-
-```bash
-just env
-```
-
-## Commands
-
-```bash
-just env
-just build
-just run
-just fmt
-just init
-just validate
-just lint
-just plan
-just apply
-just check-redirects
-```
-
-`just run` starts an interactive shell in the Terraform container with the
-generated `.env` loaded. `just plan` writes the reviewed plan into
-`.terraform/plan`; `just apply` applies that exact plan.
-
-## Import Existing Infrastructure
-
-`llacoste.dev` is already live in Cloudflare and already delegated from
-Namecheap. Import its existing resources before the first apply. Do not allow
-Terraform to attempt to recreate or replace live redirect configuration
-without first reviewing the plan.
-
-At minimum, import:
+`llacoste.dev` is already live in Cloudflare and delegated from Namecheap.
+Its existing resources must be imported before the first apply so Terraform
+does not attempt to recreate them. At minimum:
 
 ```bash
 just run
 terraform import 'cloudflare_zone.redirect["llacoste.dev"]' '<cloudflare-zone-id>'
-
 terraform import 'namecheap_domain_records.delegation["llacoste.dev"]' 'llacoste.dev'
 ```
 
 The existing Cloudflare apex record, `www` record, and redirect ruleset must
-also be imported or consciously replaced after comparing the Terraform plan
-with the active Cloudflare configuration.
+also be imported or consciously replaced after diffing the Terraform plan
+against the active Cloudflare configuration.
 
-For `lancelacoste.dev` and `llacoste.com`, Terraform will create the Cloudflare
-zones and then delegate their Namecheap nameservers to the assigned
+For `lancelacoste.dev` and `llacoste.com`, Terraform will create the
+Cloudflare zones and delegate their Namecheap nameservers to the assigned
 Cloudflare nameservers.
 
 ## State
 
-Terraform state is currently local and ignored by Git. Configure a remote,
-encrypted state backend before the first production apply if this repository
-will be used from multiple machines or automation.
+Terraform state is local and gitignored. Configure a remote, encrypted state
+backend before the first production apply if this repository will be used
+from multiple machines or automation.
