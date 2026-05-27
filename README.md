@@ -100,6 +100,11 @@ pins, and the Docker base image.
 
 ## State
 
-Terraform state is local and gitignored. Configure a remote, encrypted state
-backend before the first production apply if this repository will be used
-from multiple machines or automation.
+Terraform state lives in HCP Terraform (the `llacoste` org's `infrastructure`
+workspace), which provides remote storage, history, and run-level locking.
+The workspace is set to **Local** execution mode, so `terraform plan` and
+`terraform apply` still run inside the Docker container with credentials
+sourced from 1Password — HCP Terraform is used only as the state backend.
+
+A new operator authenticates by adding their own HCP Terraform API token to
+the 1Password vault item referenced by `.env.tpl`.

@@ -1,6 +1,14 @@
 terraform {
   required_version = "~> 1.15.0"
 
+  cloud {
+    organization = "llacoste"
+
+    workspaces {
+      name = "infrastructure"
+    }
+  }
+
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
