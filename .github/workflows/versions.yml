@@ -1,0 +1,48 @@
+name: Versions
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: tool-versions freshness
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Compare pins to latest releases
+        run: |
+          set -euo pipefail
+
+          fail=0
+
+          check() {
+            local name="$1" repo="$2" current="$3"
+            local latest
+            latest=$(gh api "repos/${repo}/releases/latest" --jq '.tag_name' | sed 's/^v//')
+            if [ "$current" = "$latest" ]; then
+              echo "::notice title=${name} up to date::${name} ${current}"
+              echo "- :white_check_mark: ${name}: \`${current}\` (latest)" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning title=${name} outdated::${name} pinned at ${current}; latest ${latest}"
+              echo "- :warning: ${name}: \`${current}\` -> \`${latest}\` available" >> "$GITHUB_STEP_SUMMARY"
+              fail=1
+            fi
+          }
+
+          tf_current=$(awk '/^terraform / {print $2}' .tool-versions)
+          tl_current=$(awk '/^tflint / {print $2}' .tool-versions)
+
+          echo "## Pinned tool versions" >> "$GITHUB_STEP_SUMMARY"
+          check Terraform hashicorp/terraform "$tf_current"
+          check TFLint    terraform-linters/tflint "$tl_current"
+
+          exit $fail
