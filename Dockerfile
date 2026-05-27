@@ -1,4 +1,4 @@
-FROM hashicorp/terraform:1.12.0
+FROM hashicorp/terraform:1.15.5
 
 ARG TFLINT_VERSION=0.62.1
 
