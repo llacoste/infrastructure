@@ -17,7 +17,7 @@ resource "cloudflare_dns_record" "factoremist_apex_a" {
   name    = "factoremist.com"
   type    = "A"
   content = each.value
-  ttl     = 30
+  ttl     = 60
   proxied = false
   comment = "DigitalOcean App Platform ingress for the factoremist app."
 }
@@ -32,7 +32,7 @@ resource "cloudflare_dns_record" "factoremist_apex_aaaa" {
   name    = "factoremist.com"
   type    = "AAAA"
   content = each.value
-  ttl     = 30
+  ttl     = 60
   proxied = false
   comment = "DigitalOcean App Platform ingress for the factoremist app."
 }
