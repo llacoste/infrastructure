@@ -6,9 +6,9 @@ for `lancelacoste.com` is the initial managed workload, not the limit of scope.
 ## Scope
 
 - Organize configuration by infrastructure responsibility and provider as new personal services are added.
-- Manage redirect-domain delegation through Namecheap and redirect delivery through Cloudflare as the initial workload.
-- Do not add management of the `lancelacoste.com` primary DNS zone, Proton Mail records, or GitHub Pages without explicit direction.
-- Keep the configuration small, data-driven, and suitable for a public portfolio later even though this repository is private initially.
+- DNS for all owned domains is hosted at Cloudflare; Namecheap is registrar only; DigitalOcean is app hosting only. Do not split DNS across providers.
+- Do not add management of the GitHub Pages repository configuration itself without explicit direction.
+- Keep the configuration small, data-driven, and suitable for a public portfolio.
 
 ## Safety
 

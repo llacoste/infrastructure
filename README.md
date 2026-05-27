@@ -4,10 +4,12 @@ Declarative Terraform configuration for the personal infrastructure that Lance
 Lacoste owns and operates — domains, accounts, services, and anything else
 worth keeping under version control.
 
-Currently managed: DNS and HTTPS redirects for the alternate personal domains
-pointing at [lancelacoste.com](https://lancelacoste.com). Not yet managed: the
-primary `lancelacoste.com` zone, Proton Mail records, and the GitHub Pages
-website repository.
+Currently managed: DNS for [lancelacoste.com](https://lancelacoste.com) and
+its alternates, including the GitHub Pages routing and Namecheap email
+forwarding records for the primary zone, plus the redirect rulesets pointing
+the alternates at the canonical site. DigitalOcean App Platform apps and
+projects are also managed. Not yet managed: the GitHub Pages repository
+configuration itself.
 
 ## Setup
 
