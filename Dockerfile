@@ -1,6 +1,10 @@
-FROM hashicorp/terraform:1.15.5
+# check=skip=InvalidDefaultArgInFrom
+# TERRAFORM_VERSION and TFLINT_VERSION are required build-args sourced from
+# .tool-versions by the justfile.
+ARG TERRAFORM_VERSION
+FROM hashicorp/terraform:${TERRAFORM_VERSION}
 
-ARG TFLINT_VERSION=0.62.1
+ARG TFLINT_VERSION
 
 RUN apk add --no-cache bash curl unzip \
     && arch="$(uname -m)" \

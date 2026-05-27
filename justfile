@@ -3,6 +3,8 @@ set shell := ["bash", "-uc"]
 
 root := justfile_directory()
 image := "lancelacoste-infrastructure"
+terraform_version := `awk '/^terraform / {print $2}' .tool-versions`
+tflint_version := `awk '/^tflint / {print $2}' .tool-versions`
 docker := "docker run --rm --workdir /workdir -v " + root + ":/workdir"
 terraform := docker + " " + image + " terraform"
 terraform_env := docker + " --env-file .env " + image + " terraform"
@@ -14,7 +16,10 @@ env:
     op inject --force -i .env.tpl -o .env
 
 build:
-    docker build --tag {{image}} .
+    docker build \
+      --build-arg TERRAFORM_VERSION={{terraform_version}} \
+      --build-arg TFLINT_VERSION={{tflint_version}} \
+      --tag {{image}} .
 
 run: env build
     {{docker}} --interactive --tty --env-file .env {{image}}
