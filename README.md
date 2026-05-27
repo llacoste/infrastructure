@@ -1,12 +1,14 @@
 # infrastructure
 
-Terraform configuration for personal domain routing to
-[lancelacoste.com](https://lancelacoste.com).
+Terraform configuration for personal infrastructure owned and operated by
+Lance Lacoste.
 
 ## Architecture
 
-Namecheap remains the registrar. Cloudflare provides authoritative DNS,
-TLS termination, and permanent redirects for alternate domains:
+The initial managed workload is domain routing for
+[lancelacoste.com](https://lancelacoste.com). Namecheap remains the registrar.
+Cloudflare provides authoritative DNS, TLS termination, and permanent redirects
+for alternate domains:
 
 | Domain | Destination |
 | --- | --- |
@@ -14,40 +16,46 @@ TLS termination, and permanent redirects for alternate domains:
 | `lancelacoste.dev` | `https://lancelacoste.com/` |
 | `llacoste.com` | `https://lancelacoste.com/` |
 
-This repository manages:
+Current resources:
 
 - Cloudflare zones for redirect domains.
 - Proxied apex and `www` records required for edge redirects.
 - Cloudflare `301` redirect rules to the canonical website.
 - Namecheap nameserver delegation to Cloudflare.
 
-It does not manage the primary `lancelacoste.com` DNS zone, email records, or
-the GitHub Pages website repository.
+Additional personal infrastructure can be added here as it is brought under
+Terraform management. The primary `lancelacoste.com` DNS zone, email records,
+and GitHub Pages website repository are not managed yet.
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.5`
+- [Docker](https://docs.docker.com/get-docker/)
 - [just](https://github.com/casey/just)
 - [1Password CLI](https://developer.1password.com/docs/cli/get-started/)
 - Namecheap API access enabled for the registered redirect domains.
 - A Cloudflare API token able to create and manage the redirect zones.
+
+Terraform runs inside the repository's Docker image and is pinned in
+`.tool-versions` and `Dockerfile`.
 
 The Cloudflare API token needs these permissions and must cover all zones in
 the account because Terraform creates new zones:
 
 | Permission |
 | --- |
+| `Account / Account Settings / Read` |
 | `Zone / Zone / Edit` |
 | `Zone / DNS / Edit` |
 | `Zone / Single Redirect / Edit` |
 
 The Namecheap provider uses the registered username and API key stored in
-1Password.
+1Password. The Cloudflare token must expose a single account; Terraform
+discovers that account when creating zones.
 
 ## Authentication
 
-Credentials are referenced in `.env.tpl` and resolved only for the lifetime of
-each command through `op run`:
+Credentials are referenced in `.env.tpl` and materialized into an ignored
+`.env` file for Docker:
 
 ```dotenv
 CLOUDFLARE_API_TOKEN="op://Automation and Tools/Cloudflare Token/api_token"
@@ -56,22 +64,18 @@ NAMECHEAP_API_KEY="op://Automation and Tools/Namecheap/api_key"
 NAMECHEAP_USE_SANDBOX="false"
 ```
 
-No generated `.env` file is required. Local `.env` files and Terraform state
-are gitignored.
-
-Copy `terraform.tfvars.example` to `terraform.tfvars` and supply the
-Cloudflare account ID before planning:
+Generate local credentials after signing into the 1Password CLI:
 
 ```bash
-cp terraform.tfvars.example terraform.tfvars
+just env
 ```
-
-The account ID is not a secret, but `terraform.tfvars` is intentionally kept
-local until the repository configuration is established.
 
 ## Commands
 
 ```bash
+just env
+just build
+just run
 just fmt
 just init
 just validate
@@ -80,8 +84,9 @@ just apply
 just check-redirects
 ```
 
-`just plan` writes the reviewed plan into `.terraform/plan`; `just apply`
-applies that exact plan.
+`just run` starts an interactive shell in the Terraform container with the
+generated `.env` loaded. `just plan` writes the reviewed plan into
+`.terraform/plan`; `just apply` applies that exact plan.
 
 ## Import Existing Infrastructure
 
@@ -93,11 +98,10 @@ without first reviewing the plan.
 At minimum, import:
 
 ```bash
-op run --env-file=.env.tpl -- terraform import \
-  'cloudflare_zone.redirect["llacoste.dev"]' '<cloudflare-zone-id>'
+just run
+terraform import 'cloudflare_zone.redirect["llacoste.dev"]' '<cloudflare-zone-id>'
 
-op run --env-file=.env.tpl -- terraform import \
-  'namecheap_domain_records.delegation["llacoste.dev"]' 'llacoste.dev'
+terraform import 'namecheap_domain_records.delegation["llacoste.dev"]' 'llacoste.dev'
 ```
 
 The existing Cloudflare apex record, `www` record, and redirect ruleset must

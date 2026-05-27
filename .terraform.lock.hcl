@@ -6,6 +6,9 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
   constraints = "~> 5.19"
   hashes = [
     "h1:HkKPMZ/n+QiExkRUSLjGMTGnuIaph+k932LiTp7CKZM=",
+    "h1:XYVRvCG+auhkY1NnSe6pK7ClqKW5GX8BgUnMQwfC7mQ=",
+    "h1:Xf1PHfUfK690caJYZvoudKKBppfleJ6RcqsEQWqKVCw=",
+    "h1:mopYISyLkUVUwMjJbuPenxIUVDrna1/7ACB1hfMfciU=",
     "zh:0651618000db705564dab5a25322b9d76ea54b7dd78931ed3565497b559babeb",
     "zh:1a7847e9479fb6d21a65ef933ffae1416b1e4b44ca940c0d6c50fc4248cc4a0d",
     "zh:5597cee5854131045eb9f201ae3a70b59c51955d31a647d9616863c746d902cb",
@@ -22,7 +25,10 @@ provider "registry.terraform.io/namecheap/namecheap" {
   version     = "2.3.3"
   constraints = "~> 2.3"
   hashes = [
+    "h1:Aoc2jtHm5pKDUwagx1ACOr1LRdL2qBCgvhsbCZChBe0=",
     "h1:Cd9xok+XGm2TB8yLZe4phhltMJ2lRAjNOGTIpaSGfco=",
+    "h1:jfgAcHVONbW7BDHDjGNU1R0o0wvQBRMRvlnVhrPu9Ws=",
+    "h1:s8ttuqH3jiDaXZOHVtecaLPU9cI/MXYBW++rq5sc/K8=",
     "zh:031c65f137f448efb91561a031e39ac7f45be33c65d9224a44becba4ec28ce92",
     "zh:19c9b37d3705353e5561f088ce36bd6e458cd9bd19ec0280f69299b5ea324fa9",
     "zh:27f4af2f9a06f8eaec9a6a67dbddcfc7647ceeadf8fdaa4379580abad87c5095",

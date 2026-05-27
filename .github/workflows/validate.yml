@@ -16,10 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Read Terraform version
+        id: tf
+        run: echo "version=$(awk '/^terraform / {print $2}' .tool-versions)" >> "$GITHUB_OUTPUT"
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: "1.5.7"
+          terraform_version: ${{ steps.tf.outputs.version }}
 
       - name: Format
         run: terraform fmt -check -recursive
