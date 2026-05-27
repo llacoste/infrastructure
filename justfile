@@ -25,7 +25,8 @@ env:
     @if [ "{{in_container}}" = "1" ]; then \
       echo "Inside container; .env is mounted via --env-file. Skipping op inject."; \
     else \
-      op inject --force -i .env.tpl -o .env; \
+      op inject -i .env.tpl | \
+        sed -E 's/^([A-Z_]+)="(.*)"$/\1=\2/' > .env; \
     fi
 
 build:
