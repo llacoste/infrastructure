@@ -1,8 +1,12 @@
+data "cloudflare_accounts" "current" {
+  max_items = 2
+}
+
 resource "cloudflare_zone" "redirect" {
   for_each = local.redirect_domains
 
   account = {
-    id = var.cloudflare_account_id
+    id = one(data.cloudflare_accounts.current.result).id
   }
 
   name = each.value
