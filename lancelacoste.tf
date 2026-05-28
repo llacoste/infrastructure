@@ -34,6 +34,16 @@ resource "cloudflare_dns_record" "lancelacoste_www" {
   comment = "GitHub Pages CNAME for the www subdomain."
 }
 
+resource "cloudflare_dns_record" "lancelacoste_resume" {
+  zone_id = cloudflare_zone.lancelacoste.id
+  name    = "resume.lancelacoste.com"
+  type    = "CNAME"
+  content = "llacoste.github.io"
+  ttl     = 60
+  proxied = false
+  comment = "GitHub Pages CNAME for the resume subdomain (public resume PDF viewer)."
+}
+
 resource "cloudflare_dns_record" "lancelacoste_mx" {
   for_each = {
     "eforward1.registrar-servers.com" = 10
